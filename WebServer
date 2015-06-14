@@ -1,0 +1,51 @@
+##############################################
+# Web Server Ken Kauffman
+# Based on code found on www.junian.net/2014/07/simple-http-server-and-client-in-python.html
+# Version 1 13June2015
+##############################################
+# BaseHTTPServer is the python library for a web service.
+# import socket is used to detect the IP address of the computer.
+# The detected IP address is part of the URL used to open the web page.
+
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import socket
+#
+# Create custom HTTPRequestHandler class
+#
+class HTTPRequestHandler(BaseHTTPRequestHandler):
+ 
+  #handle GET command
+  def do_GET(self):
+    try:
+      if self.path.endswith('/hello.htm'):
+        #send code 200 response to the browser to say something is coming
+        self.send_response(200)
+        #send header first that indicates an html page is coming
+        self.send_header('Content-type','application/json')
+        self.end_headers()
+        #send the web page content named in the URL to the browser client
+        msg = '{"message":"Hello World!"}'
+        self.wfile.write(msg)
+        return
+      else:
+        raise IOError()
+    except IOError:
+      self.send_error(404, 'file not found')  # if something goes wrong
+ 
+def run():
+  print "HTTP Server is starting..."
+ 
+  #IP address based on the server computer
+  hostname = socket.gethostname()
+  IP = socket.gethostbyname(hostname)
+  portNum = "8080"
+  #by default, http server port uses port 80, hard coded here
+  server_address = (IP, 8080)
+  httpd = HTTPServer(server_address, HTTPRequestHandler)
+  print "The HTTP server is running."
+  print "Open the home page with 'http:/" + str(IP) + chr(58) + portNum + "/hello.htm'"
+  print "Use 'control/c' here to shut down the web server."
+  httpd.serve_forever()
+ 
+if __name__ == '__main__':
+  run()
