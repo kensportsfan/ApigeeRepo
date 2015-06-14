@@ -1,37 +1,89 @@
 ##############################################
 # Web Server Ken Kauffman
 # Based on code found on www.junian.net/2014/07/simple-http-server-and-client-in-python.html
-# Version 1 13June2015
+# Version 1.1 14June2015
 ##############################################
 # BaseHTTPServer is the python library for a web service.
 # import socket is used to detect the IP address of the computer.
 # The detected IP address is part of the URL used to open the web page.
+# Milestone 0 and Milestone 1 are complete. Milestone 2 is in progress.
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import socket
+import requests
+import cgi
+
 #
 # Create custom HTTPRequestHandler class
 #
 class HTTPRequestHandler(BaseHTTPRequestHandler):
- 
+  
   #handle GET command
   def do_GET(self):
     try:
       if self.path.endswith('/hello.htm'):
         #send code 200 response to the browser to say something is coming
         self.send_response(200)
-        #send header first that indicates an html page is coming
+        #send header first that indicates an html page is cominghttp:/192.168.0.5:8080/hello.htmhttp:/192.168.0.5:8080/hello.htm
         self.send_header('Content-type','application/json')
         self.end_headers()
         #send the web page content named in the URL to the browser client
         msg = '{"message":"Hello World!"}'
         self.wfile.write(msg)
         return
+      elif self.path.endswith('/hello1.htm'):
+        #send code 200 response to the browser to say something is coming
+        self.send_response(200)
+        #send header first that indicates an html page is coming
+        #self.send_header('Content-type','application/json')
+        self.end_headers()
+        self.wfile.write("<body>")
+        self.wfile.write("<form name='stuff' method=POST action='tutor3.cgi'>")
+        self.wfile.write("    <P><B>Enter your name:</B>")
+        self.wfile.write("    <P><input type='txt' name='user'>")
+        self.wfile.write("    <P><input type='submit'>")
+        self.wfile.write("</form>")
+        self.wfile.write("</body>")
+        self.wfile.write("</html>")
+      elif self.path.endswith('/stats.htm'):
+        #send code 200 response to the browser to say something is coming
+        self.send_response(200)
+        #send header first that indicates an html page is coming
+        #self.send_header('Content-type','application/json')
+        self.end_headers()
+        #send the web page content named in the URL to the browser client
+        msg = '{"message":"Statistic"}'
+        #self.wfile.write(msg)
+        msg = "<html><body>"
+        self.wfile.write(msg)
+        msg = "<form action='http://192.168.0.5:8080/stats.htm' method='POST'>"
+        self.wfile.write(msg)
+        msg = "<input type='button' name='q' value='POST'>"
+        self.wfile.write(msg)
+        msg = "</form>"
+        self.wfile.write(msg)
+        msg = "</body></html>"
+        self.wfile.write(msg)
+        return
       else:
         raise IOError()
     except IOError:
       self.send_error(404, 'file not found')  # if something goes wrong
- 
+
+  def do_POST(self):
+    print "Found me"
+    formdata = cgi.FieldStorage()
+    print formdata
+    msgdata = formdata.getvalue("user", "(no name)")
+    self.send_response(200)
+    self.end_headers()
+    self.wfile.write(msgdata)
+    return
+
+  #def do_POST(self):
+    #print "Got here"
+    #response = requests.post(msg2,msg3)
+
 def run():
   print "HTTP Server is starting..."
  
@@ -45,6 +97,15 @@ def run():
   print "The HTTP server is running."
   print "Open the home page with 'http:/" + str(IP) + chr(58) + portNum + "/hello.htm'"
   print "Use 'control/c' here to shut down the web server."
+  '''
+  ans = raw_input("Post Request?")
+  if ans == "Yes":
+    body = {'Name': 'Eric', 'Age': '26'}
+    msg2 = "http:/" + str(IP) + chr(58) + portNum + "/stats.htm"
+    msg3 = "data=", body
+    myInstance = HTTPRequestHandler()
+    HTTPRequestHandler.do_POST(myInstance,msg2,msg3)
+  '''
   httpd.serve_forever()
  
 if __name__ == '__main__':
